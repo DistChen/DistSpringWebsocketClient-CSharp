@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>SpringWebsocketClient by DistChen</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>SpringWebsocketClient</h1>
+        <h2>连接 Spring Websocket ，并发布、订阅消息的 C# 客户端 - 使用 Stomp协议</h2>
+        <a href="https://github.com/DistChen/DistSpringWebsocketClient-CSharp" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="distspringwebsocketclient-csharp" class="anchor" href="#distspringwebsocketclient-csharp" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>DistSpringWebsocketClient-CSharp</h1>
+
+<h2>
+<a id="连接-spring-websocket-并发布订阅消息的-c-客户端" class="anchor" href="#%E8%BF%9E%E6%8E%A5-spring-websocket-%E5%B9%B6%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85%E6%B6%88%E6%81%AF%E7%9A%84-c-%E5%AE%A2%E6%88%B7%E7%AB%AF" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>连接 <a href="http://docs.spring.io/spring/docs/4.3.0.RC2/spring-framework-reference/htmlsingle/#websocket-intro">Spring WebSocket</a> ，并发布、订阅消息的 C# 客户端。</h2>
+
+<p>如果你用过<a href="https://en.wikipedia.org/wiki/WebSocket">WebSocket</a> 的话，你会觉得用来做推送等消息服务真轻松，同时你也会意识到因为其太简单，导致很多事情都需要自己处理。为了简化二次处理的过程，<a href="http://spring.io">Spring</a> 提供了一个 <a href="http://docs.spring.io/spring/docs/4.3.0.RC2/spring-framework-reference/htmlsingle/#websocket-intro">Spring WebSocket</a> 模块，此模块用 <a href="https://stomp.github.io/stomp-specification-1.2.html">Stomp 协议</a>来处理消息，使得我们可以用发布、订阅的模式来使用WebSocket。</p>
+
+<p>这里要弄明白的是：<a href="http://docs.spring.io/spring/docs/4.3.0.RC2/spring-framework-reference/htmlsingle/#websocket-intro">Spring WebSocket</a> 仅仅只是用了 <a href="https://stomp.github.io/stomp-specification-1.2.html">Stomp 协议</a> 协议的消息格式，并不是说 <a href="http://docs.spring.io/spring/docs/4.3.0.RC2/spring-framework-reference/htmlsingle/#websocket-intro">Spring WebSocket</a> 自己是一个 Stomp Server，所以是无法使用 <a href="https://stomp.github.io/stomp-specification-1.2.html">Stomp 协议</a> 提供的各种 Client 来进行连接并使用的（<a href="http://jmesnil.net/stomp-websocket/doc/">Stomp.js</a>除外）。因此如果想用 C# 等语言连接上 <a href="http://docs.spring.io/spring/docs/4.3.0.RC2/spring-framework-reference/htmlsingle/#websocket-intro">Spring WebSocket</a>，只要保证发送的消息符合 <a href="https://stomp.github.io/stomp-specification-1.2.html#STOMP_Frames">Stomp Frame</a> 的格式就行了。</p>
+
+<h3>
+<a id="stomp-frame-示例" class="anchor" href="#stomp-frame-%E7%A4%BA%E4%BE%8B" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://stomp.github.io/stomp-specification-1.2.html#STOMP_Frames">Stomp Frame</a> 示例</h3>
+
+<pre><code>    COMMAND
+    header1:value1
+    header2:value2
+
+    Body^@
+</code></pre>
+
+<h2>
+<a id="1先来看看-stompjs-中如何连接发布订阅" class="anchor" href="#1%E5%85%88%E6%9D%A5%E7%9C%8B%E7%9C%8B-stompjs-%E4%B8%AD%E5%A6%82%E4%BD%95%E8%BF%9E%E6%8E%A5%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1、先来看看 stomp.js 中如何连接、发布、订阅</h2>
+
+<h3>
+<a id="创建一个-client-对象此对象的定义及实例化由-stompjs-提供" class="anchor" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA-client-%E5%AF%B9%E8%B1%A1%E6%AD%A4%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%AE%9A%E4%B9%89%E5%8F%8A%E5%AE%9E%E4%BE%8B%E5%8C%96%E7%94%B1-stompjs-%E6%8F%90%E4%BE%9B" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>创建一个 Client 对象（此对象的定义及实例化由 Stomp.js 提供）</h3>
+
+<pre><code>    var client = Stomp.client("ws://127.0.0.1:8080/dist");
+</code></pre>
+
+<h3>
+<a id="进行连接" class="anchor" href="#%E8%BF%9B%E8%A1%8C%E8%BF%9E%E6%8E%A5" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>进行连接</h3>
+
+<pre><code>    client.connect({login:"distchen",passcode:"pass"}, function(frame) {
+        console.log(frame);
+    });
+</code></pre>
+
+<h3>
+<a id="订阅某个-topic" class="anchor" href="#%E8%AE%A2%E9%98%85%E6%9F%90%E4%B8%AA-topic" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>订阅某个 topic</h3>
+
+<pre><code>    var subscribe = client.subscribe('/topic/greet/1', function(frame){
+        console.log(frame);
+    });
+</code></pre>
+
+<h3>
+<a id="发布消息到某个topic" class="anchor" href="#%E5%8F%91%E5%B8%83%E6%B6%88%E6%81%AF%E5%88%B0%E6%9F%90%E4%B8%AAtopic" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>发布消息到某个topic</h3>
+
+<pre><code>    client.send("/send/greet/1", {}, "hello world");
+</code></pre>
+
+<h3>
+<a id="取消订阅某个-topic" class="anchor" href="#%E5%8F%96%E6%B6%88%E8%AE%A2%E9%98%85%E6%9F%90%E4%B8%AA-topic" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>取消订阅某个 topic</h3>
+
+<pre><code>    subscribe.unsubscribe("/send/greet/1", {}, "hello world");
+</code></pre>
+
+<p>从上面可以看到，使用 Spring WebSocket 和 Stomp.js 可以使我们以非常优雅的方式来使用 WebSocket。很遗憾的是，这种优雅的方式目前只有 Stomp.js 才能用。为了说明这种优雅的方式其实在任何语言中都是可以使用的，因此才有了这个项目，只是简单说明怎样用其它语言处理 stomp.js 处理的事情，以C#为例，其它语言都是类似的处理。</p>
+
+<h2>
+<a id="2我用-c-如何处理" class="anchor" href="#2%E6%88%91%E7%94%A8-c-%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2、我用 C# 如何处理</h2>
+
+<p>此类库中，同样提供了一个Client 类(Dist.SpringWebsocket.Client)。</p>
+
+<h3>
+<a id="创建一个-client-对象此对象的定义及实例化由-stompjs-提供-1" class="anchor" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA-client-%E5%AF%B9%E8%B1%A1%E6%AD%A4%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%AE%9A%E4%B9%89%E5%8F%8A%E5%AE%9E%E4%BE%8B%E5%8C%96%E7%94%B1-stompjs-%E6%8F%90%E4%BE%9B-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>创建一个 Client 对象（此对象的定义及实例化由 Stomp.js 提供）</h3>
+
+<pre><code>    // 第二个参数为一个委托，当服务不可用或者异常等均会调用，传递相应的代码和消息(异常)
+    Client client = this.client = new Client("ws://127.0.0.1:8080/dist", new Receive(delegate(StompFrame frame)
+    {
+        txtContent.Text += frame.Code.ToString() + ":" + frame.Content + Environment.NewLine;
+
+    }));
+</code></pre>
+
+<h3>
+<a id="进行连接-1" class="anchor" href="#%E8%BF%9B%E8%A1%8C%E8%BF%9E%E6%8E%A5-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>进行连接</h3>
+
+<pre><code>    //连接成功后同样会返回相应的 StompFrame 
+    Dictionary&lt;string, string&gt; headers = new Dictionary&lt;string, string&gt;();
+    headers.Add("login", "DistChen");
+    headers.Add("passcode", "pass");
+    this.client.Connect(headers, new Receive(delegate(StompFrame frame)
+    {
+        txtContent.Text += frame.Code.ToString() + ":" + frame.Content + Environment.NewLine;
+    }));
+</code></pre>
+
+<h3>
+<a id="订阅某个-topic-1" class="anchor" href="#%E8%AE%A2%E9%98%85%E6%9F%90%E4%B8%AA-topic-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>订阅某个 topic</h3>
+
+<pre><code>     //订阅此topic后，之后发往此topic的消息均会调用此委托
+    this.client.Subscribe("/topic/greet/1", new Receive(delegate(StompFrame frame)
+    {
+        txtContent.Text += frame.Code.ToString() + ":" + JObject.Parse(frame.Content).GetValue("content") + Environment.NewLine;
+    }));
+</code></pre>
+
+<h3>
+<a id="发布消息到某个topic-1" class="anchor" href="#%E5%8F%91%E5%B8%83%E6%B6%88%E6%81%AF%E5%88%B0%E6%9F%90%E4%B8%AAtopic-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>发布消息到某个topic</h3>
+
+<pre><code>    this.client.Send("send", "hello world");
+</code></pre>
+
+<h3>
+<a id="取消订阅某个-topic-1" class="anchor" href="#%E5%8F%96%E6%B6%88%E8%AE%A2%E9%98%85%E6%9F%90%E4%B8%AA-topic-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>取消订阅某个 topic</h3>
+
+<pre><code>    this.client.UnSubscribe("/topic/greet/1");
+</code></pre>
+
+<p>从上面可以看到，使用了此类库后，处理方式与 stomp.js 很类似。不仅可以保证使用 spring websocket,而且还提供了很优雅的方式来使用。</p>
+
+<blockquote>
+<p>浏览器与PC端通信<br>
+<img src="https://raw.githubusercontent.com/DistChen/DistSpringWebsocketClient-CSharp/master/dist/1.png" alt="image" title="浏览器与PC端通信"><br>
+服务不可用时，相应的处理机制<br>
+<img src="https://raw.githubusercontent.com/DistChen/DistSpringWebsocketClient-CSharp/master/dist/2.png" alt="image" title="服务不可用时，相应的处理机制"></p>
+</blockquote>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/DistChen/DistSpringWebsocketClient-CSharp/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/DistChen/DistSpringWebsocketClient-CSharp/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/DistChen/DistSpringWebsocketClient-CSharp"></a> is maintained by <a href="https://github.com/DistChen">DistChen</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
