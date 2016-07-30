@@ -93,7 +93,7 @@
 <p>此类库中，同样提供了一个Client 类(Dist.SpringWebsocket.Client)。</p>
 
 <h3>
-<a id="创建一个-client-对象此对象的定义及实例化由-stompjs-提供-1" class="anchor" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA-client-%E5%AF%B9%E8%B1%A1%E6%AD%A4%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%AE%9A%E4%B9%89%E5%8F%8A%E5%AE%9E%E4%BE%8B%E5%8C%96%E7%94%B1-stompjs-%E6%8F%90%E4%BE%9B-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>创建一个 Client 对象（此对象的定义及实例化由 Stomp.js 提供）</h3>
+<a id="创建一个-client-对象" class="anchor" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA-client-%E5%AF%B9%E8%B1%A1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>创建一个 Client 对象</h3>
 
 <pre><code>    // 第二个参数为一个委托，当服务不可用或者异常等均会调用，传递相应的代码和消息(异常)
     Client client = this.client = new Client("ws://127.0.0.1:8080/dist", new Receive(delegate(StompFrame frame)
