@@ -57,7 +57,7 @@
             txtContent.Text += frame.Code.ToString() + ":" + JObject.Parse(frame.Content).GetValue("content") + Environment.NewLine;
         }));
 ### 发布消息到某个topic
-        this.client.Send("send", "hello world");
+        this.client.Send("/send/greet/1", "hello world");
 ### 取消订阅某个 topic
         this.client.UnSubscribe("/topic/greet/1");
 
