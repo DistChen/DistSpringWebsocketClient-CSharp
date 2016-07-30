@@ -34,7 +34,7 @@
 2、我用 C# 如何处理
 -----------------------------------
 此类库中，同样提供了一个Client 类(Dist.SpringWebsocket.Client)。
-### 创建一个 Client 对象（此对象的定义及实例化由 Stomp.js 提供）
+### 创建一个 Client 对象
         // 第二个参数为一个委托，当服务不可用或者异常等均会调用，传递相应的代码和消息(异常)
         Client client = this.client = new Client("ws://127.0.0.1:8080/dist", new Receive(delegate(StompFrame frame)
         {
